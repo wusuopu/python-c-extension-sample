@@ -1,6 +1,6 @@
 # 使用C语言编写Python扩展3——创建自定义类型(1)
 
-在Python代码中如果要创建一个自定义对象使用class关键字即可，但是在C代码中就没那么方便了。  
+在Python代码中如果要创建一个自定义类使用class关键字即可，但是在C代码中就没那么方便了。  
 首先简单介绍下Python中的类型。在python中一切皆对象，python中有两种对象：  
 一种是类型对象（class对象）：表示Python定义的类型，例如int, str, object等；  
 另一种是实例对象（instance对象）：表示由class对象创建的实例。 
@@ -143,9 +143,9 @@ python是一门面向对象的编程语言，它是用C写的，而C又是面向
         "Noddy objects",           /*tp_doc*/
     };
 
-这里是定义了一个noddy_NoddyObject结构体，它的第一个字段为 PyObject_HEAD ，因此相当于一个PyObject类型；然后还有一个 noddy_NoddyType 变量，它的第一个字段为 *PyVarObject_HEAD_INIT(NULL)* ，这个很很重要，按理说这个应该写成 *PyVarObject_HEAD_INIT(&PyType_Type, 0)* ，即表示Noddy这个类是一个type类型的对象。不过有的C编译器会对这个报错，因此这一项将在后面调用PyType_Ready函数来填充。  
+这里是定义了一个noddy_NoddyObject结构体，它的第一个字段为 PyObject_HEAD ，因此相当于一个PyObject类型；然后还有一个 noddy_NoddyType 变量，它的第一个字段为 *PyVarObject_HEAD_INIT(NULL, 0)* ，这个很很重要，按理说这个应该写成 *PyVarObject_HEAD_INIT(&PyType_Type, 0)* ，即表示Noddy这个类是一个type类型的对象。不过有的C编译器会对这个报错，因此这一项将在后面调用PyType_Ready函数来填充。  
 noddy_NoddyType 即是 Noddy 类，它保存了该类的元信息；noddy_NoddyObject结构体用于保存该类的实例对象的数据。  
-*只要是定义的结构体以PyObject_HEAD开始就属于是一个PyObject类型。PyObject_VAR_HEAD与PyObject_HEAD相似，只不PyObject_HEAD表示的是该类型占用内存大小是固定的如int、float；而PyObject_VAR_HEAD表示该类型占用的内存是可变的如list、dict。*   
+*只要是定义的结构体以PyObject_HEAD开始就属于是一个PyObject类型。PyObject_VAR_HEAD与PyObject_HEAD相似，只是PyObject_HEAD表示的是该类型占用内存大小是固定的如int、float；而PyObject_VAR_HEAD表示该类型占用的内存是可变的如list、dict。*   
 
 然后创建一个新扩展模块，并完成初始化：
 
@@ -170,7 +170,7 @@ noddy_NoddyType 即是 Noddy 类，它保存了该类的元信息；noddy_NoddyO
 
 ***注意***：以上是针对Python2的，在Python3中模块的初始化操作略有不同。请参考第一节的内容。  
 
-noddy_NoddyType即是我们要创建的 Noddy 类，它是 PyTypeObject 类型的结构变量。为了创建新的类型，我们需要指明 tp_new 方法，它相当于Python中的 __new__，这里我们使用默认的 PyType_GenericNew 即可。  
+noddy_NoddyType即是我们要创建的 Noddy 类，它是 PyTypeObject 类型的结构变量。为了创建新的类型，我们需要指明 tp_new 方法，它相当于Python中的 \__new__，这里我们使用默认的 PyType_GenericNew 即可。  
 然后调用 PyType_Ready 完成新类型的创建。  
 最后调用 PyModule_AddObject 在该模块中添加刚刚创建的新类型。  
 
@@ -184,6 +184,6 @@ noddy_NoddyType即是我们要创建的 Noddy 类，它是 PyTypeObject 类型�
     print(o)
     print(type(o), type(noddy.Noddy))
     
-    # noddy.Noddy 类不能被继承
+    # 这个会报错，noddy.Noddy 类不能被继承
     class A(noddy.Noddy):
         pass
